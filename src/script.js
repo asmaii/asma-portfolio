@@ -2,6 +2,8 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
+// first line of your main entry
+document.documentElement.classList.remove("no-css");
 
 window.gsap = gsap;
 window.ScrollTrigger = ScrollTrigger;
@@ -1005,3 +1007,165 @@ const yearElement = document.getElementById("year");
 if (yearElement) {
   yearElement.textContent = new Date().getFullYear();
 }
+
+(() => {
+  const loader = document.querySelector("#preloader");
+  if (!loader || !window.gsap) return;
+
+  const $ = (selector) => loader.querySelector(selector);
+
+  const percent = $(".loader-percent");
+  const progress = $(".loader-progress");
+  const status = $(".loader-status");
+  const content = document.querySelector("#site-content");
+
+  document.body.classList.remove("is-loaded");
+
+  const counter = { value: 0 };
+  let pageReady = document.readyState === "complete";
+  let finished = false;
+
+  const intro = gsap.timeline({
+    defaults: { ease: "power3.out" },
+  });
+
+  intro
+    .from(".preloader-top > span", {
+      y: 20,
+      opacity: 0,
+      stagger: 0.12,
+      duration: 0.7,
+    })
+    .from(
+      ".loader-label",
+      {
+        y: 15,
+        opacity: 0,
+        duration: 0.5,
+      },
+      "-=0.2",
+    )
+    .from(
+      ".loader-name > span",
+      {
+        yPercent: 110,
+        rotate: 3,
+        stagger: 0.16,
+        duration: 1.1,
+        ease: "power4.out",
+      },
+      "-=0.1",
+    )
+    .from(
+      ".preloader-bottom > span",
+      {
+        y: 12,
+        opacity: 0,
+        stagger: 0.1,
+        duration: 0.5,
+      },
+      "-=0.4",
+    )
+    .to(
+      progress,
+      {
+        scaleX: 0.25,
+        duration: 0.8,
+        ease: "power2.inOut",
+      },
+      0.2,
+    );
+
+  function updateCounter(value) {
+    counter.value = value;
+    percent.textContent = `${Math.round(value).toString().padStart(2, "0")}%`;
+  }
+
+  // Progression indicative, plafonnée avant la fin réelle.
+  const progressTween = gsap.to(counter, {
+    value: 90,
+    duration: 2.8,
+    ease: "power1.inOut",
+    onUpdate() {
+      updateCounter(counter.value);
+      gsap.set(progress, {
+        scaleX: counter.value / 100,
+      });
+    },
+  });
+
+  function finishLoader() {
+    if (finished) return;
+    finished = true;
+
+    progressTween.kill();
+
+    const exit = gsap.timeline({
+      defaults: { ease: "power4.inOut" },
+      onComplete() {
+        loader.remove();
+        if (content) {
+          content.style.visibility = "visible";
+        }
+        document.body.classList.add("is-loaded");
+      },
+    });
+
+    status.textContent = "WELCOME";
+
+    exit
+      .to(counter, {
+        value: 100,
+        duration: 0.45,
+        ease: "power2.out",
+        onUpdate() {
+          updateCounter(counter.value);
+          gsap.set(progress, {
+            scaleX: counter.value / 100,
+          });
+        },
+      })
+      .to(
+        ".loader-name > span",
+        {
+          yPercent: -115,
+          stagger: 0.08,
+          duration: 0.55,
+        },
+        "-=0.05",
+      )
+      .to(
+        ".loader-label, .preloader-bottom",
+        {
+          opacity: 0,
+          y: -12,
+          duration: 0.3,
+        },
+        "<",
+      )
+      .to(
+        loader,
+        {
+          yPercent: -100,
+          duration: 0.9,
+        },
+        "-=0.05",
+      );
+  }
+
+  function onReady() {
+    pageReady = true;
+    if (intro.progress() === 1) finishLoader();
+  }
+
+  if (pageReady) {
+    intro.eventCallback("onComplete", () => {
+      finishLoader();
+    });
+  } else {
+    window.addEventListener("load", onReady, { once: true });
+    intro.eventCallback("onComplete", () => {
+      if (pageReady) finishLoader();
+    });
+  }
+})();

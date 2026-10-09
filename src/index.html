@@ -4,16 +4,41 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#f1efeb" />
-    <meta name="description" content="Portfolio d’Asma Hammami, ingénieure informatique et intégratrice web Front-End à Tunis. 10 ans d’expérience en intégration Figma pixel-perfect, HTML, CSS, JavaScript, responsive design et GSAP." />
-    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <style>
+      html.no-css body {
+        visibility: hidden;
+      }
+    </style>
+    <script>
+      document.documentElement.classList.add("no-css");
+    </script>
+    <link
+      rel="stylesheet"
+      href="styles.css"
+      onload="document.documentElement.classList.remove('no-css')"
+    />
+    <meta
+      name="description"
+      content="Portfolio d’Asma Hammami, ingénieure informatique et intégratrice web Front-End à Tunis. 10 ans d’expérience en intégration Figma pixel-perfect, HTML, CSS, JavaScript, responsive design et GSAP."
+    />
+    <meta
+      name="robots"
+      content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+    />
     <meta name="author" content="Asma Hammami" />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="fr_TN" />
     <meta property="og:site_name" content="Asma Hammami — Portfolio" />
     <meta property="og:title" content="Asma Hammami — Intégratrice Web & Développeuse Front-End" />
-    <meta property="og:description" content="Ingénieure informatique à Tunis, spécialisée en intégration Figma pixel-perfect, interfaces responsive, JavaScript et animations GSAP." />
+    <meta
+      property="og:description"
+      content="Ingénieure informatique à Tunis, spécialisée en intégration Figma pixel-perfect, interfaces responsive, JavaScript et animations GSAP."
+    />
     <meta name="twitter:title" content="Asma Hammami — Intégratrice Web & Développeuse Front-End" />
-    <meta name="twitter:description" content="Portfolio professionnel : intégration Figma, Front-End, responsive design, JavaScript et GSAP." />
+    <meta
+      name="twitter:description"
+      content="Portfolio professionnel : intégration Figma, Front-End, responsive design, JavaScript et GSAP."
+    />
     <title>Asma Hammami | Intégratrice Web & Développeuse Front-End à Tunis</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -51,6 +76,34 @@
         </div>
       </nav>
     </header>
+    <div class="preloader" id="preloader">
+      <div class="preloader-top">
+        <span>AH®</span>
+        <span>PORTFOLIO</span>
+      </div>
+
+      <div class="preloader-center">
+        <div class="loader-label">
+          <span>CREATIVE DEVELOPER</span>
+          <span class="loader-percent">00%</span>
+        </div>
+
+        <div class="loader-name">
+          <span>ASMA</span>
+          <span>HAMMAMI<span class="loader-dot">.</span></span>
+        </div>
+
+        <div class="loader-track">
+          <div class="loader-progress"></div>
+        </div>
+      </div>
+
+      <div class="preloader-bottom">
+        <span>DESIGNING DIGITAL EXPERIENCES</span>
+        <span class="loader-status">INITIALIZING...</span>
+      </div>
+    </div>
+
     <main id="top">
       <section class="hero overflow-hidden relative">
         <div class="hero-orb hero-orb-one" aria-hidden="true"></div>
