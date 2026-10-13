@@ -12,7 +12,8 @@ window.ScrollTrigger = ScrollTrigger;
 
 (() => {
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const lenis = prefersReducedMotion ? null : new Lenis();
+  const useLenis = !prefersReducedMotion && window.matchMedia("(pointer:fine)").matches;
+  const lenis = useLenis ? new Lenis() : null;
 
   if (lenis) {
     lenis.on("scroll", ScrollTrigger.update);
@@ -28,7 +29,7 @@ window.ScrollTrigger = ScrollTrigger;
 
     window.scrollTo({
       top: target.getBoundingClientRect().top + window.scrollY + offset,
-      behavior: "auto",
+      behavior: prefersReducedMotion ? "auto" : "smooth",
     });
   };
 
@@ -176,7 +177,7 @@ window.ScrollTrigger = ScrollTrigger;
   };
 
   const initGSAP = () => {
-    if (prefersReducedMotion) {
+    if (prefersReducedMotion || !window.matchMedia("(pointer:fine)").matches) {
       revealFallback();
       return;
     }
@@ -198,13 +199,12 @@ window.ScrollTrigger = ScrollTrigger;
       if (nav) {
         timeline.fromTo(
           nav,
-          { autoAlpha: 0, y: -18, filter: "blur(10px)" },
+          { autoAlpha: 0, y: -18 },
           {
             autoAlpha: 1,
             y: 0,
-            filter: "blur(0px)",
             duration: 0.8,
-            clearProps: "opacity,transform,visibility,filter",
+            clearProps: "opacity,transform,visibility",
           },
           0,
         );
@@ -1181,49 +1181,49 @@ if (yearElement) {
 
   intro
     .from(".preloader-top > span", {
-      y: 12,
+      y: 8,
       opacity: 0,
       stagger: 0.04,
-      duration: 0.3,
+      duration: 0.2,
     })
     .from(
       ".loader-label",
       {
-        y: 10,
+        y: 6,
         opacity: 0,
-        duration: 0.25,
+        duration: 0.16,
       },
-      "-=0.15",
+      "-=0.1",
     )
     .from(
       ".loader-name > span",
       {
         yPercent: 110,
         rotate: 3,
-        stagger: 0.05,
-        duration: 0.45,
+        stagger: 0.035,
+        duration: 0.32,
         ease: "power4.out",
       },
-      "-=0.05",
+      "-=0.04",
     )
     .from(
       ".preloader-bottom > span",
       {
-        y: 8,
+        y: 5,
         opacity: 0,
-        stagger: 0.04,
-        duration: 0.22,
+        stagger: 0.03,
+        duration: 0.15,
       },
-      "-=0.15",
+      "-=0.1",
     )
     .to(
       progress,
       {
         scaleX: 0.25,
-        duration: 0.45,
+        duration: 0.3,
         ease: "power2.inOut",
       },
-      0.1,
+      0.06,
     );
 
   function updateCounter(value) {
@@ -1234,7 +1234,7 @@ if (yearElement) {
   // Progression indicative, plafonnée avant la fin réelle.
   const progressTween = gsap.to(counter, {
     value: 90,
-    duration: 1,
+    duration: 0.4,
     ease: "power1.inOut",
     onUpdate() {
       updateCounter(counter.value);
@@ -1266,7 +1266,7 @@ if (yearElement) {
     exit
       .to(counter, {
         value: 100,
-        duration: 0.18,
+        duration: 0.12,
         ease: "power2.out",
         onUpdate() {
           updateCounter(counter.value);
@@ -1279,8 +1279,8 @@ if (yearElement) {
         ".loader-name > span",
         {
           yPercent: -115,
-          stagger: 0.04,
-          duration: 0.32,
+          stagger: 0.025,
+          duration: 0.23,
         },
         "-=0.05",
       )
@@ -1289,7 +1289,7 @@ if (yearElement) {
         {
           opacity: 0,
           y: -12,
-          duration: 0.2,
+          duration: 0.12,
         },
         "<",
       )
@@ -1298,7 +1298,7 @@ if (yearElement) {
         loader,
         {
           yPercent: -100,
-          duration: 0.5,
+          duration: 0.3,
         },
         "<",
       );
