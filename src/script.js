@@ -40,8 +40,8 @@ window.ScrollTrigger = ScrollTrigger;
   const backToTop = document.querySelector(".back-to-top");
   const backToTopProgress = backToTop?.querySelector(".back-to-top-progress");
   const hero = document.querySelector(".hero");
-  let maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
-  let heroScrollThreshold = hero ? hero.offsetTop + hero.offsetHeight : 0;
+  let maxScroll = 0;
+  let heroScrollThreshold = 0;
 
   // ==========================================
   // MOBILE NAVIGATION
@@ -116,6 +116,7 @@ window.ScrollTrigger = ScrollTrigger;
   });
   window.addEventListener("resize", updateScrollMetrics, { passive: true });
   scrollMetricsObserver?.observe(document.body);
+  requestAnimationFrame(updateScrollMetrics);
 
   updateScrollUI();
 
@@ -149,11 +150,14 @@ window.ScrollTrigger = ScrollTrigger;
   // ==========================================
 
   if (cursorGlow && !prefersReducedMotion && window.matchMedia("(pointer:fine)").matches) {
+    const setCursorX = gsap.quickSetter(cursorGlow, "x", "px");
+    const setCursorY = gsap.quickSetter(cursorGlow, "y", "px");
+
     window.addEventListener(
       "pointermove",
       (event) => {
-        cursorGlow.style.left = `${event.clientX}px`;
-        cursorGlow.style.top = `${event.clientY}px`;
+        setCursorX(event.clientX);
+        setCursorY(event.clientY);
       },
       { passive: true },
     );
@@ -182,10 +186,9 @@ window.ScrollTrigger = ScrollTrigger;
     // Start the header and hero entrance only after the loader has cleared.
     const playLandingIntro = () => {
       const nav = document.querySelector(".nav");
-      const navItems = gsap
-        .utils
-        .toArray(".nav > .brand, .nav > .menu, .navlinks > a")
-        .filter((element) => element.getClientRects().length);
+      const navItems = window.matchMedia("(min-width: 1024px)").matches
+        ? gsap.utils.toArray(".nav > .brand, .navlinks > a")
+        : gsap.utils.toArray(".nav > .brand, .nav > .menu");
       const heroCopy = gsap.utils.toArray(".hero-copy > *:not(h1)");
       const heroCard = document.querySelector(".hero-card");
       const portraitDetails = gsap.utils.toArray(".portrait-monogram, .portrait-label");
@@ -337,39 +340,42 @@ window.ScrollTrigger = ScrollTrigger;
     if (window.matchMedia("(pointer:fine)").matches) {
       document.querySelectorAll(".btn").forEach((button) => {
         let rect;
+        let measureFrame;
+        const setX = gsap.quickTo(button, "x", { duration: 0.25, overwrite: true });
+        const setY = gsap.quickTo(button, "y", { duration: 0.25, overwrite: true });
 
         button.addEventListener("pointerenter", () => {
-          rect = button.getBoundingClientRect();
+          measureFrame = requestAnimationFrame(() => {
+            rect = button.getBoundingClientRect();
+          });
         });
 
         button.addEventListener("pointermove", (event) => {
           if (!rect) return;
 
-          gsap.to(button, {
-            x: (event.clientX - rect.left - rect.width / 2) * 0.12,
-            y: (event.clientY - rect.top - rect.height / 2) * 0.12,
-            duration: 0.25,
-            overwrite: true,
-          });
+          setX((event.clientX - rect.left - rect.width / 2) * 0.12);
+          setY((event.clientY - rect.top - rect.height / 2) * 0.12);
         });
 
         button.addEventListener("pointerleave", () => {
+          cancelAnimationFrame(measureFrame);
           rect = null;
-          gsap.to(button, {
-            x: 0,
-            y: 0,
-            duration: 0.5,
-            ease: "elastic.out(1,.5)",
-          });
+          setX(0);
+          setY(0);
         });
       });
 
       // Project card tilt
       document.querySelectorAll(".project").forEach((card) => {
         let rect;
+        let measureFrame;
+        const setRotateX = gsap.quickTo(card, "rotateX", { duration: 0.35, overwrite: true });
+        const setRotateY = gsap.quickTo(card, "rotateY", { duration: 0.35, overwrite: true });
 
         card.addEventListener("pointerenter", () => {
-          rect = card.getBoundingClientRect();
+          measureFrame = requestAnimationFrame(() => {
+            rect = card.getBoundingClientRect();
+          });
         });
 
         card.addEventListener("pointermove", (event) => {
@@ -379,22 +385,15 @@ window.ScrollTrigger = ScrollTrigger;
 
           const ry = ((event.clientX - rect.left) / rect.width - 0.5) * 3;
 
-          gsap.to(card, {
-            rotateX: rx,
-            rotateY: ry,
-            duration: 0.35,
-            overwrite: true,
-          });
+          setRotateX(rx);
+          setRotateY(ry);
         });
 
         card.addEventListener("pointerleave", () => {
+          cancelAnimationFrame(measureFrame);
           rect = null;
-          gsap.to(card, {
-            rotateX: 0,
-            rotateY: 0,
-            duration: 0.7,
-            ease: "power3.out",
-          });
+          setRotateX(0);
+          setRotateY(0);
         });
       });
     }

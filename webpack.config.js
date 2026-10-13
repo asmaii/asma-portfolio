@@ -3,30 +3,11 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const CopyPlugin = require("copy-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
-
-class AsyncStylesheetPlugin {
-  apply(compiler) {
-    compiler.hooks.compilation.tap("AsyncStylesheetPlugin", (compilation) => {
-      HtmlWebpackPlugin.getHooks(compilation).alterAssetTags.tap("AsyncStylesheetPlugin", (data) => {
-        data.assetTags.styles.forEach((tag) => {
-          if (tag.attributes.href !== "main.css") return;
-
-          tag.attributes.rel = "preload";
-          tag.attributes.as = "style";
-          tag.attributes.onload = "this.onload=null;this.rel='stylesheet'";
-        });
-
-        return data;
-      });
-    });
-  }
-}
-
 module.exports = {
   entry: "./src/main.js",
   output: {
     path: path.resolve(__dirname, "dist"),
-    filename: "[name].js",
+    filename: "[name].[contenthash:8].js",
     clean: true,
     assetModuleFilename: "assets/[name][ext]",
   },
@@ -50,13 +31,11 @@ module.exports = {
       inject: "body",
       scriptLoading: "defer",
     }),
-    new AsyncStylesheetPlugin(),
-    new MiniCssExtractPlugin({ filename: "[name].css" }),
+    new MiniCssExtractPlugin({ filename: "[name].[contenthash:8].css" }),
     new CopyPlugin({
       patterns: [
         { from: "img", to: "img", globOptions: { ignore: ["**/asma-hammami.png"] } },
         { from: "document", to: "document" },
-        { from: "src/critical.css", to: "critical.css" },
       ],
     }),
   ],
