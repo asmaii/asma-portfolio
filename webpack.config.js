@@ -22,7 +22,10 @@ module.exports = {
   plugins: [
     new HtmlWebpackPlugin({ template: "./src/index.html", filename: "index.html" }),
     new CopyPlugin({
-      patterns: [{ from: "img", to: "img", globOptions: { ignore: ["**/asma-hammami.png"] } }],
+      patterns: [
+        { from: "img", to: "img", globOptions: { ignore: ["**/asma-hammami.png"] } },
+        { from: "document", to: "document" },
+      ],
     }),
   ],
   optimization: {

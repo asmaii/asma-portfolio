@@ -134,81 +134,143 @@ window.ScrollTrigger = ScrollTrigger;
 
     gsap.registerPlugin(ScrollTrigger);
 
-    // Hero content
-    if (document.querySelector(".hero-copy")) {
-      gsap.fromTo(
-        ".hero-copy > *",
-        { opacity: 0, y: 28 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 1,
-          stagger: 0.09,
-          ease: "power3.out",
-          delay: 0.15,
-        },
-      );
+    // Start the header and hero entrance only after the loader has cleared.
+    const playLandingIntro = () => {
+      const nav = document.querySelector(".nav");
+      const navItems = gsap
+        .utils
+        .toArray(".nav > .brand, .nav > .menu, .navlinks > a")
+        .filter((element) => element.getClientRects().length);
+      const heroCopy = gsap.utils.toArray(".hero-copy > *");
+      const heroCard = document.querySelector(".hero-card");
+      const portraitDetails = gsap.utils.toArray(".portrait-monogram, .portrait-label");
+
+      const timeline = gsap.timeline({ defaults: { ease: "power4.out" } });
+
+      if (nav) {
+        timeline.fromTo(
+          nav,
+          { autoAlpha: 0, y: -18, filter: "blur(10px)" },
+          {
+            autoAlpha: 1,
+            y: 0,
+            filter: "blur(0px)",
+            duration: 0.8,
+            clearProps: "opacity,transform,visibility,filter",
+          },
+          0,
+        );
+      }
+
+      if (navItems.length) {
+        timeline.fromTo(
+          navItems,
+          { autoAlpha: 0, y: -9 },
+          {
+            autoAlpha: 1,
+            y: 0,
+            duration: 0.55,
+            stagger: 0.04,
+            clearProps: "opacity,transform,visibility",
+          },
+          0.08,
+        );
+      }
+
+      if (heroCopy.length) {
+        timeline.fromTo(
+          heroCopy,
+          { autoAlpha: 0, y: 24, filter: "blur(7px)" },
+          {
+            autoAlpha: 1,
+            y: 0,
+            filter: "blur(0px)",
+            duration: 0.8,
+            stagger: 0.11,
+            clearProps: "opacity,transform,visibility,filter",
+          },
+          0.08,
+        );
+      }
+
+      if (heroCard) {
+        timeline.fromTo(
+          heroCard,
+          { autoAlpha: 0, x: 34, y: 14, scale: 0.96, filter: "blur(8px)" },
+          {
+            autoAlpha: 1,
+            x: 0,
+            y: 0,
+            scale: 1,
+            filter: "blur(0px)",
+            duration: 1,
+            clearProps: "opacity,transform,visibility,filter",
+          },
+          0.2,
+        );
+      }
+
+      if (portraitDetails.length) {
+        timeline.fromTo(
+          portraitDetails,
+          { autoAlpha: 0, y: 16 },
+          {
+            autoAlpha: 1,
+            y: 0,
+            duration: 0.6,
+            stagger: 0.12,
+            clearProps: "opacity,transform,visibility",
+          },
+          0.65,
+        );
+      }
+    };
+
+    if (document.querySelector("#preloader")) {
+      window.addEventListener("portfolio:loader-finished", playLandingIntro, { once: true });
+    } else {
+      playLandingIntro();
     }
 
-    if (document.querySelector(".hero-card")) {
-      gsap.fromTo(
-        ".hero-card",
-        { opacity: 0, y: 35, scale: 0.96 },
-        {
-          opacity: 1,
-          y: 0,
-          scale: 1,
-          duration: 1.15,
-          ease: "power3.out",
-          delay: 0.35,
-        },
-      );
-    }
+    // Reveal supporting content without competing with section-specific timelines.
+    gsap.utils
+      .toArray(".reveal:not(.section-head):not(.lab-demo):not(.lab-code):not(.contact-box)")
+      .forEach((element) => {
+        if (element.closest(".hero")) return;
 
-    // Reveal elements on scroll
-    gsap.utils.toArray(".reveal").forEach((element) => {
-      if (element.closest(".hero")) return;
+        const from = { autoAlpha: 0, y: 28, filter: "blur(8px)" };
 
-      gsap.fromTo(
-        element,
-        { opacity: 0, y: 35 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.85,
-          ease: "power3.out",
-          clearProps: "opacity,transform,visibility",
-          scrollTrigger: {
-            trigger: element,
-            start: "top 84%",
-            once: true,
+        if (element.classList.contains("reveal-left")) {
+          from.x = -32;
+          from.y = 12;
+        } else if (element.classList.contains("reveal-right")) {
+          from.x = 32;
+          from.y = 12;
+        } else if (element.classList.contains("reveal-scale")) {
+          from.y = 20;
+          from.scale = 0.96;
+        }
+
+        gsap.fromTo(
+          element,
+          from,
+          {
+            autoAlpha: 1,
+            x: 0,
+            y: 0,
+            scale: 1,
+            filter: "blur(0px)",
+            duration: 0.95,
+            ease: "power4.out",
+            clearProps: "opacity,transform,visibility,filter",
+            scrollTrigger: {
+              trigger: element,
+              start: "top 86%",
+              once: true,
+            },
           },
-        },
-      );
-    });
-
-    // Staggered groups
-    gsap.utils.toArray(".stagger").forEach((group) => {
-      if (!group.children.length) return;
-
-      gsap.fromTo(
-        group.children,
-        { opacity: 0, y: 25 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.7,
-          stagger: 0.1,
-          ease: "power3.out",
-          clearProps: "opacity,transform,visibility",
-          scrollTrigger: {
-            trigger: group,
-            start: "top 82%",
-            once: true,
-          },
-        },
-      );
-    });
+        );
+      });
 
     // Section parallax
     gsap.utils.toArray("[data-parallax]").forEach((element) => {
@@ -393,7 +455,7 @@ window.ScrollTrigger = ScrollTrigger;
     });
 
     // Stats and about cards
-    gsap.utils.toArray(".scale-stagger > *").forEach((element, index) => {
+    gsap.utils.toArray(".scale-stagger:not(.skill-grid) > *").forEach((element, index) => {
       gsap.fromTo(
         element,
         {
@@ -687,24 +749,64 @@ window.ScrollTrigger = ScrollTrigger;
     }
 
     // Gallery tiles
-    gsap.utils.toArray(".gallery-tile").forEach((element, index) => {
-      gsap.fromTo(
-        element,
-        { opacity: 0, y: 44 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 1,
-          ease: "power3.out",
-          delay: (index % 3) * 0.08,
-          clearProps: "opacity,transform,visibility",
-          scrollTrigger: {
-            trigger: element,
-            start: "top 88%",
-            once: true,
-          },
+    gsap.utils.toArray(".gallery-tile").forEach((element) => {
+      const artwork = element.querySelector(".gallery-art");
+      const labels = [
+        element.querySelector(".gallery-kicker"),
+        element.querySelector(".gallery-caption"),
+      ].filter(Boolean);
+      const timeline = gsap.timeline({
+        scrollTrigger: {
+          trigger: element,
+          start: "top 88%",
+          once: true,
         },
+      });
+
+      timeline.fromTo(
+        element,
+        {
+          autoAlpha: 0,
+          y: 44,
+          scale: 0.96,
+          filter: "blur(8px)",
+        },
+        {
+          autoAlpha: 1,
+          y: 0,
+          scale: 1,
+          filter: "blur(0px)",
+          duration: 0.95,
+          ease: "power4.out",
+          clearProps: "opacity,transform,visibility,filter",
+        },
+        0,
       );
+
+      if (artwork) {
+        timeline.fromTo(
+          artwork,
+          { scale: 1.12 },
+          { scale: 1, duration: 1.2, ease: "power3.out", clearProps: "transform" },
+          "-=0.75",
+        );
+      }
+
+      if (labels.length) {
+        timeline.fromTo(
+          labels,
+          { autoAlpha: 0, y: 14 },
+          {
+            autoAlpha: 1,
+            y: 0,
+            duration: 0.55,
+            stagger: 0.07,
+            ease: "power3.out",
+            clearProps: "opacity,transform,visibility",
+          },
+          "-=0.65",
+        );
+      }
     });
 
     requestAnimationFrame(() => ScrollTrigger.refresh());
@@ -1143,13 +1245,14 @@ if (yearElement) {
         },
         "<",
       )
+      .call(() => window.dispatchEvent(new Event("portfolio:loader-finished")), null, "-=0.05")
       .to(
         loader,
         {
           yPercent: -100,
           duration: 0.9,
         },
-        "-=0.05",
+        "<",
       );
   }
 
