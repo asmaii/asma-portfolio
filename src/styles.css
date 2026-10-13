@@ -1,5 +1,3 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap");
-
 :root {
   --bg: #f7f6f3;
   --surface: #ffffff;
@@ -25,7 +23,7 @@
   padding: 0;
 }
 html {
-  scroll-behavior: smooth;
+  scroll-behavior: auto;
 }
 ::-webkit-scrollbar {
   height: 0;
@@ -92,6 +90,84 @@ button {
   pointer-events: none;
   transform: translate(-50%, -50%);
   mix-blend-mode: multiply;
+}
+
+.back-to-top {
+  position: fixed;
+  z-index: 40;
+  right: clamp(16px, 3vw, 36px);
+  bottom: clamp(16px, 3vw, 36px);
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 50%;
+  background: rgba(23, 32, 51, 0.9);
+  box-shadow: 0 12px 32px rgba(23, 32, 51, 0.2);
+  color: #fff;
+  font-size: 24px;
+  line-height: 1;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(10px);
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease,
+    visibility 0.3s;
+  visibility: hidden;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.back-to-top-ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+  transform: rotate(-90deg);
+}
+
+.back-to-top-track,
+.back-to-top-progress {
+  fill: none;
+  stroke-width: 2;
+}
+
+.back-to-top-track {
+  stroke: rgba(255, 255, 255, 0.28);
+}
+
+.back-to-top-progress {
+  stroke: url("#back-to-top-gradient");
+  stroke-dasharray: 131.95;
+  stroke-dashoffset: 131.95;
+  stroke-linecap: round;
+}
+
+.back-to-top.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+  visibility: visible;
+}
+
+.back-to-top:hover {
+  background: var(--blue);
+  transform: translateY(-3px);
+}
+
+.back-to-top:focus-visible {
+  outline: 3px solid var(--rose);
+  outline-offset: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .back-to-top {
+    transition: none;
+  }
 }
 
 .wrap {
@@ -1610,13 +1686,7 @@ section {
   min-height: 500px;
   background: linear-gradient(145deg, #e8e6e1, #d8dce2 60%, #ead7d3);
 }
-.portrait:before {
-  width: 82%;
-  height: auto;
-  aspect-ratio: 1;
-  top: 7%;
-  background: radial-gradient(circle, #fffaf4, rgba(200, 143, 141, 0.38));
-}
+
 .portrait-monogram {
   top: 5%;
   width: 100%;

@@ -1,5 +1,7 @@
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import Lenis from "lenis";
+import "lenis/dist/lenis.css";
 
 gsap.registerPlugin(ScrollTrigger);
 // first line of your main entry
@@ -10,12 +12,34 @@ window.ScrollTrigger = ScrollTrigger;
 
 (() => {
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const lenis = prefersReducedMotion ? null : new Lenis();
+
+  if (lenis) {
+    lenis.on("scroll", ScrollTrigger.update);
+    gsap.ticker.add((time) => lenis.raf(time * 1000));
+    gsap.ticker.lagSmoothing(0);
+  }
+
+  const scrollToTarget = (target, offset = -90) => {
+    if (lenis) {
+      lenis.scrollTo(target, { offset });
+      return;
+    }
+
+    window.scrollTo({
+      top: target.getBoundingClientRect().top + window.scrollY + offset,
+      behavior: "auto",
+    });
+  };
 
   const nav = document.querySelector(".nav");
   const menu = document.querySelector(".menu");
   const navlinks = document.querySelector(".navlinks");
   const progress = document.querySelector(".progress");
   const cursorGlow = document.querySelector(".cursor-glow");
+  const backToTop = document.querySelector(".back-to-top");
+  const backToTopProgress = backToTop?.querySelector(".back-to-top-progress");
+  const hero = document.querySelector(".hero");
 
   // ==========================================
   // MOBILE NAVIGATION
@@ -59,13 +83,22 @@ window.ScrollTrigger = ScrollTrigger;
   const updateScrollUI = () => {
     const max = document.documentElement.scrollHeight - window.innerHeight;
 
-    const progressValue = max > 0 ? window.scrollY / max : 0;
+    const progressValue = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
 
     if (progress) {
       progress.style.width = `${progressValue * 100}%`;
     }
 
+    if (backToTopProgress) {
+      const circumference = 2 * Math.PI * 21;
+      backToTopProgress.style.strokeDashoffset = `${circumference * (1 - progressValue)}`;
+    }
+
     nav?.classList.toggle("scrolled", window.scrollY > 30);
+
+    const pastHero = hero ? hero.getBoundingClientRect().bottom <= 0 : window.scrollY > 0;
+    backToTop?.classList.toggle("is-visible", pastHero);
+    backToTop?.setAttribute("aria-hidden", String(!pastHero));
   };
 
   window.addEventListener("scroll", updateScrollUI, {
@@ -73,6 +106,11 @@ window.ScrollTrigger = ScrollTrigger;
   });
 
   updateScrollUI();
+
+  backToTop?.addEventListener("click", () => {
+    const top = document.querySelector("#top");
+    if (top) scrollToTarget(top, 0);
+  });
 
   // ==========================================
   // SMOOTH ANCHOR NAVIGATION
@@ -90,12 +128,7 @@ window.ScrollTrigger = ScrollTrigger;
 
       event.preventDefault();
 
-      const y = target.getBoundingClientRect().top + window.scrollY - 90;
-
-      window.scrollTo({
-        top: y,
-        behavior: prefersReducedMotion ? "auto" : "smooth",
-      });
+      scrollToTarget(target);
     });
   });
 
@@ -969,10 +1002,8 @@ window.ScrollTrigger = ScrollTrigger;
 
     renderProjects();
 
-    document.querySelector("#projects .section-head")?.scrollIntoView({
-      behavior: prefersReducedMotion ? "auto" : "smooth",
-      block: "start",
-    });
+    const sectionHead = document.querySelector("#projects .section-head");
+    if (sectionHead) scrollToTarget(sectionHead, 0);
   });
 
   renderProjects();
@@ -1124,7 +1155,7 @@ if (yearElement) {
   document.body.classList.remove("is-loaded");
 
   const counter = { value: 0 };
-  let pageReady = document.readyState === "complete";
+  let pageReady = document.readyState !== "loading";
   let finished = false;
 
   const intro = gsap.timeline({
@@ -1266,7 +1297,7 @@ if (yearElement) {
       finishLoader();
     });
   } else {
-    window.addEventListener("load", onReady, { once: true });
+    document.addEventListener("DOMContentLoaded", onReady, { once: true });
     intro.eventCallback("onComplete", () => {
       if (pageReady) finishLoader();
     });

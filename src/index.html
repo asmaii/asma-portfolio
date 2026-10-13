@@ -9,6 +9,7 @@
       name="description"
       content="Développeuse Front-End et intégratrice web à Tunis, Asma Hammami crée des sites responsive et des interfaces fidèles aux maquettes Figma."
     />
+    <link rel="stylesheet" href="critical.css" />
     <meta name="robots" content="index, follow, max-image-preview:large" />
     <meta name="author" content="Asma Hammami" />
     <meta property="og:type" content="website" />
@@ -27,6 +28,10 @@
     <title>Asma Hammami | Développeuse Front-End à Tunis</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap"
+    />
     <link rel="icon" type="image/png" href="img/favicon/favicon-96x96.png" sizes="96x96" />
     <link rel="icon" type="image/svg+xml" href="img/favicon/favicon.svg" />
     <link rel="shortcut icon" href="img/favicon/favicon.ico" />
@@ -36,6 +41,19 @@
   <body class="bg-ivory text-ink antialiased selection:bg-electric selection:text-white">
     <div class="progress" aria-hidden="true"></div>
     <div class="cursor-glow" aria-hidden="true"></div>
+    <button class="back-to-top" type="button" aria-label="Retour en haut" aria-hidden="true">
+      <svg class="back-to-top-ring" viewBox="0 0 48 48" aria-hidden="true">
+        <defs>
+          <linearGradient id="back-to-top-gradient" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#172033" />
+            <stop offset="100%" stop-color="#c99598" />
+          </linearGradient>
+        </defs>
+        <circle class="back-to-top-track" cx="24" cy="24" r="21" />
+        <circle class="back-to-top-progress" cx="24" cy="24" r="21" />
+      </svg>
+      <span aria-hidden="true">↑</span>
+    </button>
     <header>
       <nav class="nav shadow-premium" aria-label="Navigation principale">
         <a class="brand" href="#top" aria-label="Asma Hammami — accueil"

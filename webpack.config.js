@@ -20,11 +20,17 @@ module.exports = {
     ],
   },
   plugins: [
-    new HtmlWebpackPlugin({ template: "./src/index.html", filename: "index.html" }),
+    new HtmlWebpackPlugin({
+      template: "./src/index.html",
+      filename: "index.html",
+      inject: "body",
+      scriptLoading: "defer",
+    }),
     new CopyPlugin({
       patterns: [
         { from: "img", to: "img", globOptions: { ignore: ["**/asma-hammami.png"] } },
         { from: "document", to: "document" },
+        { from: "src/critical.css", to: "critical.css" },
       ],
     }),
   ],
