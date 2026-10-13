@@ -40,6 +40,8 @@ window.ScrollTrigger = ScrollTrigger;
   const backToTop = document.querySelector(".back-to-top");
   const backToTopProgress = backToTop?.querySelector(".back-to-top-progress");
   const hero = document.querySelector(".hero");
+  let maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+  let heroScrollThreshold = hero ? hero.offsetTop + hero.offsetHeight : 0;
 
   // ==========================================
   // MOBILE NAVIGATION
@@ -81,12 +83,11 @@ window.ScrollTrigger = ScrollTrigger;
   // ==========================================
 
   const updateScrollUI = () => {
-    const max = document.documentElement.scrollHeight - window.innerHeight;
-
-    const progressValue = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
+    const scrollY = window.scrollY;
+    const progressValue = maxScroll > 0 ? Math.min(1, Math.max(0, scrollY / maxScroll)) : 0;
 
     if (progress) {
-      progress.style.width = `${progressValue * 100}%`;
+      progress.style.transform = `scaleX(${progressValue})`;
     }
 
     if (backToTopProgress) {
@@ -94,16 +95,27 @@ window.ScrollTrigger = ScrollTrigger;
       backToTopProgress.style.strokeDashoffset = `${circumference * (1 - progressValue)}`;
     }
 
-    nav?.classList.toggle("scrolled", window.scrollY > 30);
+    nav?.classList.toggle("scrolled", scrollY > 30);
 
-    const pastHero = hero ? hero.getBoundingClientRect().bottom <= 0 : window.scrollY > 0;
+    const pastHero = hero ? scrollY >= heroScrollThreshold : scrollY > 0;
     backToTop?.classList.toggle("is-visible", pastHero);
     backToTop?.setAttribute("aria-hidden", String(!pastHero));
   };
 
+  const updateScrollMetrics = () => {
+    maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+    heroScrollThreshold = hero ? hero.offsetTop + hero.offsetHeight : 0;
+    updateScrollUI();
+  };
+
+  const scrollMetricsObserver =
+    "ResizeObserver" in window ? new ResizeObserver(updateScrollMetrics) : null;
+
   window.addEventListener("scroll", updateScrollUI, {
     passive: true,
   });
+  window.addEventListener("resize", updateScrollMetrics, { passive: true });
+  scrollMetricsObserver?.observe(document.body);
 
   updateScrollUI();
 
@@ -174,7 +186,7 @@ window.ScrollTrigger = ScrollTrigger;
         .utils
         .toArray(".nav > .brand, .nav > .menu, .navlinks > a")
         .filter((element) => element.getClientRects().length);
-      const heroCopy = gsap.utils.toArray(".hero-copy > *");
+      const heroCopy = gsap.utils.toArray(".hero-copy > *:not(h1)");
       const heroCard = document.querySelector(".hero-card");
       const portraitDetails = gsap.utils.toArray(".portrait-monogram, .portrait-label");
 
@@ -324,8 +336,14 @@ window.ScrollTrigger = ScrollTrigger;
     // Magnetic buttons
     if (window.matchMedia("(pointer:fine)").matches) {
       document.querySelectorAll(".btn").forEach((button) => {
+        let rect;
+
+        button.addEventListener("pointerenter", () => {
+          rect = button.getBoundingClientRect();
+        });
+
         button.addEventListener("pointermove", (event) => {
-          const rect = button.getBoundingClientRect();
+          if (!rect) return;
 
           gsap.to(button, {
             x: (event.clientX - rect.left - rect.width / 2) * 0.12,
@@ -336,6 +354,7 @@ window.ScrollTrigger = ScrollTrigger;
         });
 
         button.addEventListener("pointerleave", () => {
+          rect = null;
           gsap.to(button, {
             x: 0,
             y: 0,
@@ -347,8 +366,14 @@ window.ScrollTrigger = ScrollTrigger;
 
       // Project card tilt
       document.querySelectorAll(".project").forEach((card) => {
+        let rect;
+
+        card.addEventListener("pointerenter", () => {
+          rect = card.getBoundingClientRect();
+        });
+
         card.addEventListener("pointermove", (event) => {
-          const rect = card.getBoundingClientRect();
+          if (!rect) return;
 
           const rx = ((event.clientY - rect.top) / rect.height - 0.5) * -3;
 
@@ -363,6 +388,7 @@ window.ScrollTrigger = ScrollTrigger;
         });
 
         card.addEventListener("pointerleave", () => {
+          rect = null;
           gsap.to(card, {
             rotateX: 0,
             rotateY: 0,
@@ -766,21 +792,6 @@ window.ScrollTrigger = ScrollTrigger;
       });
     });
 
-    // Scroll progress animation
-    if (progress) {
-      gsap.to(progress, {
-        scaleX: 1,
-        transformOrigin: "left center",
-        ease: "none",
-        scrollTrigger: {
-          trigger: document.body,
-          start: "top top",
-          end: "bottom bottom",
-          scrub: 0.25,
-        },
-      });
-    }
-
     // Gallery tiles
     gsap.utils.toArray(".gallery-tile").forEach((element) => {
       const artwork = element.querySelector(".gallery-art");
@@ -921,12 +932,19 @@ window.ScrollTrigger = ScrollTrigger;
 
     projects.forEach((project) => {
       const index = filtered.indexOf(project);
+      const projectName = project.querySelector("h3")?.textContent.trim();
+      const projectLink = project.querySelector(".project-link");
 
       const visible = index >= first && index < first + pageSize;
 
       project.classList.toggle("is-hidden", !visible);
       project.setAttribute("aria-hidden", String(!visible));
+      if (projectName && projectLink) {
+        projectLink.setAttribute("aria-label", `Visiter le projet ${projectName}`);
+      }
     });
+
+    if (!scrollMetricsObserver) requestAnimationFrame(updateScrollMetrics);
 
     const counter = document.querySelector(".filter-count");
 
@@ -1164,49 +1182,49 @@ if (yearElement) {
 
   intro
     .from(".preloader-top > span", {
-      y: 20,
+      y: 12,
       opacity: 0,
-      stagger: 0.12,
-      duration: 0.7,
+      stagger: 0.04,
+      duration: 0.3,
     })
     .from(
       ".loader-label",
       {
-        y: 15,
+        y: 10,
         opacity: 0,
-        duration: 0.5,
+        duration: 0.25,
       },
-      "-=0.2",
+      "-=0.15",
     )
     .from(
       ".loader-name > span",
       {
         yPercent: 110,
         rotate: 3,
-        stagger: 0.16,
-        duration: 1.1,
+        stagger: 0.05,
+        duration: 0.45,
         ease: "power4.out",
       },
-      "-=0.1",
+      "-=0.05",
     )
     .from(
       ".preloader-bottom > span",
       {
-        y: 12,
+        y: 8,
         opacity: 0,
-        stagger: 0.1,
-        duration: 0.5,
+        stagger: 0.04,
+        duration: 0.22,
       },
-      "-=0.4",
+      "-=0.15",
     )
     .to(
       progress,
       {
         scaleX: 0.25,
-        duration: 0.8,
+        duration: 0.45,
         ease: "power2.inOut",
       },
-      0.2,
+      0.1,
     );
 
   function updateCounter(value) {
@@ -1217,7 +1235,7 @@ if (yearElement) {
   // Progression indicative, plafonnée avant la fin réelle.
   const progressTween = gsap.to(counter, {
     value: 90,
-    duration: 2.8,
+    duration: 1,
     ease: "power1.inOut",
     onUpdate() {
       updateCounter(counter.value);
@@ -1249,7 +1267,7 @@ if (yearElement) {
     exit
       .to(counter, {
         value: 100,
-        duration: 0.45,
+        duration: 0.18,
         ease: "power2.out",
         onUpdate() {
           updateCounter(counter.value);
@@ -1262,8 +1280,8 @@ if (yearElement) {
         ".loader-name > span",
         {
           yPercent: -115,
-          stagger: 0.08,
-          duration: 0.55,
+          stagger: 0.04,
+          duration: 0.32,
         },
         "-=0.05",
       )
@@ -1272,7 +1290,7 @@ if (yearElement) {
         {
           opacity: 0,
           y: -12,
-          duration: 0.3,
+          duration: 0.2,
         },
         "<",
       )
@@ -1281,7 +1299,7 @@ if (yearElement) {
         loader,
         {
           yPercent: -100,
-          duration: 0.9,
+          duration: 0.5,
         },
         "<",
       );

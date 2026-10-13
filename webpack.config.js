@@ -2,6 +2,26 @@ const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const CopyPlugin = require("copy-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
+
+class AsyncStylesheetPlugin {
+  apply(compiler) {
+    compiler.hooks.compilation.tap("AsyncStylesheetPlugin", (compilation) => {
+      HtmlWebpackPlugin.getHooks(compilation).alterAssetTags.tap("AsyncStylesheetPlugin", (data) => {
+        data.assetTags.styles.forEach((tag) => {
+          if (tag.attributes.href !== "main.css") return;
+
+          tag.attributes.rel = "preload";
+          tag.attributes.as = "style";
+          tag.attributes.onload = "this.onload=null;this.rel='stylesheet'";
+        });
+
+        return data;
+      });
+    });
+  }
+}
+
 module.exports = {
   entry: "./src/main.js",
   output: {
@@ -30,6 +50,7 @@ module.exports = {
       inject: "body",
       scriptLoading: "defer",
     }),
+    new AsyncStylesheetPlugin(),
     new MiniCssExtractPlugin({ filename: "[name].css" }),
     new CopyPlugin({
       patterns: [
@@ -40,6 +61,7 @@ module.exports = {
     }),
   ],
   optimization: {
+    minimizer: ["...", new CssMinimizerPlugin()],
     splitChunks: {
       chunks: "all",
       cacheGroups: {
