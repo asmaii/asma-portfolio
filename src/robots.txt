@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://asma-hammami.netlify.app/sitemap.xml
